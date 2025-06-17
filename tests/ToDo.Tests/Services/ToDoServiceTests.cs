@@ -1,13 +1,21 @@
 ﻿using System.Diagnostics;
+
 using ToDo.Mcp.Entities;
 using ToDo.Mcp.Services;
+using ToDo.Mcp.Services.TimeProviders;
 
 namespace ToDo.Tests.Services;
 
 public class ToDoServiceTests
 {
-    private readonly ToDoService _toDoService = new();
+    private readonly ITimeProvider _timeProvider;
+    private readonly ToDoService _toDoService;
 
+    public ToDoServiceTests()
+    {
+        _timeProvider = new StaticTimeProvider(DateTime.Now);
+        _toDoService = new ToDoService(_timeProvider);
+    }
 
     [Fact]
     public async Task GetToDosAsync_ReturnsInitialToDos()
@@ -82,5 +90,21 @@ public class ToDoServiceTests
         // Assert
         var result = await _toDoService.GetToDosAsync();
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task MarkAsCompleted_MarksToDoAsCompletedAsync()
+    {
+        // Arrange
+        var toDo1 = new ToDoItem { Title = "ToDo 1", Description = "Description 1" };
+        await _toDoService.CreateTodoAsync(toDo1);
+
+        // Act
+        await _toDoService.MarkAsCompletedAsync(toDo1.Id);
+
+        // Assert
+        var result = await _toDoService.GetTodoByIdAsync(toDo1.Id);
+        Assert.True(result.IsCompleted);
+        Assert.NotNull(result.CompletedAt);
     }
 }
