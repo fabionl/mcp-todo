@@ -9,39 +9,39 @@ namespace ToDo.Mcp.McpTools;
 [McpServerToolType]
 public class ToDoTools(IToDoService _todoService)
 {
-  [McpServerTool, Description("Get all todo items")]
+  [McpServerTool, Description("Get all TODO items")]
     public async Task<IEnumerable<ToDoItem>> GetTodos()
     {
         return await _todoService.GetToDosAsync();
     }
 
-    [McpServerTool, Description("Get a todo item by ID")]
+    [McpServerTool, Description("Get a TODO item by ID")]
     public async Task<ToDoItem> GetTodoById(
-        [Description("The ID of the todo item")] Guid id)
+        [Description("The ID of the TODO item")] Guid id)
     {
         return await _todoService.GetTodoByIdAsync(id);
     }
 
-    [McpServerTool, Description("Create a new todo item")]
+    [McpServerTool, Description("Create a new TODO item")]
     public async Task<ToDoItem> CreateTodo(
-        [Description("The title of the todo item")] string title,
-        [Description("The description of the todo item")] string description = "")
+        [Description("The title of the TODO item")] string title,
+        [Description("The description of the TODO item")] string description = "")
     {
         return await _todoService.CreateTodoAsync(title, description);
     }
 
-    [McpServerTool, Description("Update a todo item")]
+    [McpServerTool, Description("Update a TODO item")]
     public async Task<ToDoItem> UpdateTodo(
-        [Description("The ID of the todo item")] Guid id,
-        [Description("The title of the todo item")] string title,
-        [Description("The description of the todo item")] string description)
+        [Description("The ID of the TODO item")] Guid id,
+        [Description("The title of the TODO item")] string title,
+        [Description("The description of the TODO item")] string description)
     {
         return await _todoService.UpdateTodoAsync(id, title, description);
     }
 
-    [McpServerTool, Description("Delete a todo item")]
+    [McpServerTool, Description("Delete a TODO item")]
     public async Task<ToDoItem> DeleteTodo(
-        [Description("The ID of the todo item")] Guid id)
+        [Description("The ID of the TODO item")] Guid id)
     {
         return await _todoService.DeleteTodoAsync(id);
     }
