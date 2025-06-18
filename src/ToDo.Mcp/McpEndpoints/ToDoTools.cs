@@ -4,7 +4,7 @@ using System.ComponentModel;
 using ToDo.Mcp.ToDoItems;
 using ToDo.Mcp.ToDoItems.Models;
 
-namespace ToDo.Mcp.McpTools;
+namespace ToDo.Mcp.McpEndpoints;
 
 [McpServerToolType]
 public class ToDoTools(IToDoService _todoService)
