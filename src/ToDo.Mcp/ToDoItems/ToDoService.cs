@@ -61,13 +61,9 @@ public class ToDoService : IToDoService
   public async Task<ToDoItem> UpdateTodoAsync(ToDoItem todo)
   {
     var existingTodo = await GetTodoByIdAsync(todo.Id);
-    var todoBuilder = ToDoItemBuilder.FromToDoItem(existingTodo)
-      .WithTitle(todo.Title)
-      .WithDescription(todo.Description);
-    var updatedTodo = todoBuilder.Build();
     _todoMap.Remove(existingTodo.Id);
-    _todoMap.Add(updatedTodo.Id, updatedTodo);
-    return updatedTodo;
+    _todoMap.Add(todo.Id, todo);
+    return todo;
   }
 
   public async Task<ToDoItem> UpdateTodoAsync(Guid id, string title, string description)
