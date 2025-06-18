@@ -45,4 +45,11 @@ public class ToDoTools(IToDoService _todoService)
     {
         return await _todoService.DeleteTodoAsync(id);
     }
+
+    [McpServerTool, Description("Mark a TODO item as completed")]
+    public async Task<ToDoItem> MarkAsCompleted(
+        [Description("The ID of the TODO item")] Guid id)
+    {
+        return await _todoService.MarkAsCompletedAsync(id);
+    }
 }
