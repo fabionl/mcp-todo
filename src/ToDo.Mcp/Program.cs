@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using ToDo.Mcp.ToDoItems;
-using ToDo.Mcp.McpTools;
+using ToDo.Mcp.McpEndpoints;
 
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 builder.Services
@@ -14,7 +14,6 @@ builder.Services.AddSingleton<IToDoService, ToDoService>();
 
 var app = builder.Build();
 
-Console.WriteLine("Starting...");
+Console.WriteLine("Starting MCP server...");
 
 await app.RunAsync();
-

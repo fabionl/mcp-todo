@@ -1,7 +1,4 @@
-﻿using System.Data.Common;
-using System.Diagnostics;
-
-using ToDo.Mcp.Services.TimeProviders;
+﻿using ToDo.Mcp.Services.TimeProviders;
 using ToDo.Mcp.ToDoItems;
 using ToDo.Mcp.ToDoItems.Models;
 
