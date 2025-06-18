@@ -6,10 +6,12 @@ namespace ToDo.Mcp.ToDoItems;
 public interface IToDoService
 {
   Task<ToDoItem> MarkAsCompletedAsync(Guid id);
+  Task<ToDoItem> CreateTodoAsync(string title, string description);
   Task<ToDoItem> CreateTodoAsync(ToDoItem todo);
   Task<ToDoItem> DeleteTodoAsync(Guid id);
   Task<IEnumerable<ToDoItem>> GetToDosAsync();
   Task<ToDoItem> GetTodoByIdAsync(Guid id);
+  Task<ToDoItem> UpdateTodoAsync(Guid id, string title, string description);
   Task<ToDoItem> UpdateTodoAsync(ToDoItem todo);
 }
 
@@ -17,11 +19,7 @@ public class ToDoService : IToDoService
 {
   private readonly ITimeProvider _timeProvider;
 
-  private static readonly ToDoItem[] initialTodos = [
-      new ToDoItem { Id = Guid.NewGuid(), Title = "Buy groceries", Description = "Buy groceries", IsCompleted = false }
-  ];
-
-  private readonly List<ToDoItem> _todoList = [.. initialTodos];
+  private readonly Dictionary<Guid, ToDoItem> _todoMap = new();
 
   public ToDoService(ITimeProvider timeProvider)
   {
@@ -30,20 +28,33 @@ public class ToDoService : IToDoService
 
   public Task<IEnumerable<ToDoItem>> GetToDosAsync()
   {
-    return Task.FromResult(_todoList.AsEnumerable());
+    return Task.FromResult(_todoMap.Values.AsEnumerable());
   }
 
   public Task<ToDoItem> GetTodoByIdAsync(Guid id)
   {
-    var todo = _todoList
-      .FirstOrDefault(todo => todo.Id == id)
-        ?? throw new Exception("Todo not found");
+    var todo = _todoMap.GetValueOrDefault(id) ?? throw new Exception("Todo not found");
+
     return Task.FromResult(todo);
+  }
+
+  public async Task<ToDoItem> CreateTodoAsync(string title, string description)
+  {
+    var todo = GetToDoItemBuilder()
+      .WithTitle(title)
+      .WithDescription(description)
+      .Build();
+    return await CreateTodoAsync(todo);
   }
 
   public Task<ToDoItem> CreateTodoAsync(ToDoItem todo)
   {
-    _todoList.Add(SanitizeTodo(todo));
+    if (_todoMap.ContainsKey(todo.Id))
+    {
+      throw new Exception("Todo already exists");
+    }
+
+    _todoMap.Add(todo.Id, todo);
     return Task.FromResult(todo);
   }
 
@@ -52,36 +63,49 @@ public class ToDoService : IToDoService
     var existingTodo = await GetTodoByIdAsync(todo.Id);
     var todoBuilder = ToDoItemBuilder.FromToDoItem(existingTodo)
       .WithTitle(todo.Title)
-      .WithDescription(todo.Description)
-      .WithIsCompleted(todo.IsCompleted);
-
+      .WithDescription(todo.Description);
     var updatedTodo = todoBuilder.Build();
-
-    _todoList.Remove(existingTodo);
-    _todoList.Add(updatedTodo);
+    _todoMap.Remove(existingTodo.Id);
+    _todoMap.Add(updatedTodo.Id, updatedTodo);
     return updatedTodo;
+  }
+
+  public async Task<ToDoItem> UpdateTodoAsync(Guid id, string title, string description)
+  {
+    var existingTodo = await GetTodoByIdAsync(id);
+    var todoBuilder = GetToDoItemBuilder(existingTodo)
+      .WithTitle(title)
+      .WithDescription(description);
+
+    return await UpdateTodoAsync(todoBuilder.Build());
   }
 
   public async Task<ToDoItem> DeleteTodoAsync(Guid id)
   {
     var todo = await GetTodoByIdAsync(id);
-    _todoList.Remove(todo);
+    _todoMap.Remove(todo.Id);
+
     return todo;
   }
 
   public async Task<ToDoItem> MarkAsCompletedAsync(Guid id)
   {
     var todo = await GetTodoByIdAsync(id);
-    var todoBuilder = ToDoItemBuilder.FromToDoItem(todo)
+    var todoBuilder = GetToDoItemBuilder(todo)
       .WithIsCompleted(true);
+
     return await UpdateTodoAsync(todoBuilder.Build());
   }
 
-  private ToDoItem SanitizeTodo(ToDoItem todo)
+  private ToDoItemBuilder GetToDoItemBuilder(ToDoItem todo)
   {
-    todo.CreatedAt = todo.CreatedAt == default ? _timeProvider.Current : todo.CreatedAt;
-    return todo;
+    return ToDoItemBuilder.FromToDoItem(todo)
+      .WithTimeProvider(_timeProvider);
   }
 
-
+  private ToDoItemBuilder GetToDoItemBuilder()
+  {
+    return new ToDoItemBuilder()
+      .WithTimeProvider(_timeProvider);
+  }
 }

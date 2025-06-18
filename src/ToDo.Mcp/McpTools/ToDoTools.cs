@@ -27,25 +27,16 @@ public class ToDoTools(IToDoService _todoService)
         [Description("The title of the todo item")] string title,
         [Description("The description of the todo item")] string description = "")
     {
-        var todoBuilder = new ToDoItemBuilder()
-            .WithTitle(title)
-            .WithDescription(description);
-        return await _todoService.CreateTodoAsync(todoBuilder.Build());
+        return await _todoService.CreateTodoAsync(title, description);
     }
 
     [McpServerTool, Description("Update a todo item")]
     public async Task<ToDoItem> UpdateTodo(
         [Description("The ID of the todo item")] Guid id,
         [Description("The title of the todo item")] string title,
-        [Description("The description of the todo item")] string description,
-        [Description("Whether the todo item is completed")] bool isCompleted)
+        [Description("The description of the todo item")] string description)
     {
-        var todoBuilder = new ToDoItemBuilder()
-            .WithId(id)
-            .WithTitle(title)
-            .WithDescription(description)
-            .WithIsCompleted(isCompleted);
-        return await _todoService.UpdateTodoAsync(todoBuilder.Build());
+        return await _todoService.UpdateTodoAsync(id, title, description);
     }
 
     [McpServerTool, Description("Delete a todo item")]

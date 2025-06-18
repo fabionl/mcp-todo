@@ -26,9 +26,9 @@ public class ToDoItemBuilder
         _id = toDoItem.Id;
         _title = toDoItem.Title;
         _description = toDoItem.Description;
-        _isCompleted = toDoItem.IsCompleted;
+        _isCompleted = toDoItem.Status.IsCompleted;
+        _completedAt = toDoItem.Status.CompletedAt;
         _createdAt = toDoItem.CreatedAt;
-        _completedAt = toDoItem.CompletedAt;
         _isDirty = false;
         return this;
     }
@@ -51,13 +51,21 @@ public class ToDoItemBuilder
 
     public ToDoItemBuilder WithTitle(string title)
     {
-        _title = title;
+        if (_title != title)
+        {
+            _title = title;
+            _isDirty = true;
+        }
         return this;
     }
 
     public ToDoItemBuilder WithDescription(string description)
     {
-        _description = description;
+        if (_description != description)
+        {
+            _description = description;
+            _isDirty = true;
+        }
         return this;
     }
 
@@ -69,14 +77,22 @@ public class ToDoItemBuilder
 
     public ToDoItemBuilder WithCreatedAt(DateTime? createdAt = null)
     {
-        _createdAt = createdAt;
+        if (_createdAt != createdAt)
+        {
+            _createdAt = createdAt;
+            _isDirty = true;
+        }
         return this;
     }
 
-    public ToDoItemBuilder WithCompletedAt(DateTime? completedAt = null)
+    public ToDoItemBuilder WithCompletedAt(DateTime? completedAt)
     {
-        _completedAt = completedAt;
-        _isCompleted = completedAt is not null;
+        if (_completedAt != completedAt)
+        {
+            _completedAt = completedAt;
+            _isCompleted = completedAt is not null;
+            _isDirty = true;
+        }
         return this;
     }
 
@@ -84,14 +100,13 @@ public class ToDoItemBuilder
     {
         SanitizeBeforeBuild();
         return new ToDoItem
-        {
-            Id = _id ?? Guid.CreateVersion7(),
-            Title = _title,
-            Description = _description,
-            IsCompleted = _isCompleted,
-            CreatedAt = _createdAt ?? _timeProvider.Current,
-            CompletedAt = _completedAt
-        };
+        (
+            Id: _id ?? Guid.CreateVersion7(),
+            Title: _title,
+            Description: _description,
+            Status: new ToDoItemStatus(IsCompleted: _isCompleted, CompletedAt: _completedAt),
+            CreatedAt: _createdAt ?? _timeProvider.Current
+        );
     }
 
     private void SanitizeBeforeBuild()

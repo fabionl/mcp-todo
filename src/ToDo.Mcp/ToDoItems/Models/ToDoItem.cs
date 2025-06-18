@@ -1,11 +1,8 @@
 namespace ToDo.Mcp.ToDoItems.Models;
 
-public class ToDoItem
+public record ToDoItem(Guid Id, string Title, string Description, ToDoItemStatus Status, DateTime CreatedAt)
 {
-    public Guid Id { get; set; }
-    public required string Title { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public bool IsCompleted { get; set; } = false;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
-}
+    public bool IsCompleted => Status.IsCompleted;
+};
+
+public record ToDoItemStatus(bool IsCompleted, DateTime? CompletedAt);
