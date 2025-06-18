@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-using ToDo.Mcp.Services;
+using ToDo.Mcp.ToDoItems;
 using ToDo.Mcp.McpTools;
 
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);

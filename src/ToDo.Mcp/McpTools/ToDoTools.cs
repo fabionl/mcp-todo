@@ -1,8 +1,8 @@
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 
-using ToDo.Mcp.Entities;
-using ToDo.Mcp.Services;
+using ToDo.Mcp.ToDoItems;
+using ToDo.Mcp.ToDoItems.Models;
 
 namespace ToDo.Mcp.McpTools;
 

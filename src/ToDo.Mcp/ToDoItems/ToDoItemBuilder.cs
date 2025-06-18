@@ -1,22 +1,13 @@
 using ToDo.Mcp.Services.TimeProviders;
+using ToDo.Mcp.ToDoItems.Models;
 
-namespace ToDo.Mcp.Entities;
-
-public class ToDoItem
-{
-    public Guid Id { get; set; }
-    public required string Title { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public bool IsCompleted { get; set; } = false;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
-}
+namespace ToDo.Mcp.ToDoItems;
 
 public class ToDoItemBuilder
 {
     private bool _isDirty = true;
     private ITimeProvider _timeProvider = new SystemTimeProvider();
-    private Guid? _id;
+    private Guid? _id = null;
     private string _title = string.Empty;
     private string _description = string.Empty;
     private bool _isCompleted = false;
@@ -91,10 +82,10 @@ public class ToDoItemBuilder
 
     public ToDoItem Build()
     {
-        ValidateBeforeBuild();
+        SanitizeBeforeBuild();
         return new ToDoItem
         {
-            Id = _id,
+            Id = _id ?? Guid.CreateVersion7(),
             Title = _title,
             Description = _description,
             IsCompleted = _isCompleted,
@@ -103,11 +94,12 @@ public class ToDoItemBuilder
         };
     }
 
-    private void ValidateBeforeBuild()
+    private void SanitizeBeforeBuild()
     {
-        if (string.IsNullOrEmpty(_title))
+        if (_isDirty)
         {
-            throw new InvalidOperationException("Title is required");
+            _id ??= Guid.CreateVersion7();
+            _createdAt ??= _timeProvider.Current;
         }
     }
 }

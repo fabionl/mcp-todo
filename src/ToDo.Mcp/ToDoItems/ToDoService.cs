@@ -1,7 +1,7 @@
-using ToDo.Mcp.Entities;
 using ToDo.Mcp.Services.TimeProviders;
+using ToDo.Mcp.ToDoItems.Models;
 
-namespace ToDo.Mcp.Services;
+namespace ToDo.Mcp.ToDoItems;
 
 public interface IToDoService
 {
