@@ -1,16 +1,13 @@
-using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using Serilog;
 using ToDo.Mcp.McpEndpoints;
 using Xunit.Abstractions;
 
 namespace ToDo.Tests.McpEndpoints;
 
-public class ToDoToolsTests(ITestOutputHelper output) : McpServerFixture(output.ToLoggerFactory())
+public class ToDoToolsTests(ITestOutputHelper output) : McpServerFixture(output)
 {
     [Fact]
     public async Task GetTodos_ReturnsEmptyList_WhenNoTodosExist()
@@ -18,24 +15,13 @@ public class ToDoToolsTests(ITestOutputHelper output) : McpServerFixture(output.
         var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMinutes(1));
         var logger = LoggerFactory.CreateLogger<ToDoToolsTests>();
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.TestOutput(output)
-            .CreateLogger();
 
         // Arrange
-        await using var scope = Server.Services.CreateAsyncScope();
-        var mcpServerTools = scope.ServiceProvider.GetServices<McpServerTool>();
-        var mcpServerTool = mcpServerTools.FirstOrDefault(t => t.ProtocolTool.Name == nameof(ToDoTools.GetTodos));
-        Debug.Assert(mcpServerTool is not null, "mcpServerTool cannot be found");
-        // foreach (var mcpServerTool in mcpServerTools)
-        // {
-        //     logger.LogInformation("{Name} Input Schema: {InputSchema}",
-        //         mcpServerTool.ProtocolTool.Name,
-        //         JsonSerializer.Serialize(mcpServerTool.ProtocolTool.InputSchema));
-        // }
+        await using var scope = GetScope();
+        var mcpServerTool = GetMcpServerTool(nameof(ToDoTools.GetTodos), scope);
 
         // Act
-        var mcpServer = scope.ServiceProvider.GetRequiredService<IMcpServer>();
+        var mcpServer = GetMcpServer(scope);
         var request = new RequestContext<CallToolRequestParams>(mcpServer)
         {
             Params = new CallToolRequestParams
