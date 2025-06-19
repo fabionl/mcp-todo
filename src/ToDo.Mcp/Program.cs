@@ -7,7 +7,6 @@ using ToDo.Mcp.ToDoItems;
 using ToDo.Mcp.McpEndpoints;
 using ToDo.Mcp.Services.TimeProviders;
 
-// TODO: check is args include --logs with a location for logs
 var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 var appDataPath = Path.Combine(homePath, ".todo-mcp");
 if (!Directory.Exists(appDataPath))
