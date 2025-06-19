@@ -1,38 +1,59 @@
-using ModelContextProtocol.Client;
-using ToDo.Tests.Managers;
+using System.Diagnostics;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
+using Serilog;
+using ToDo.Mcp.McpEndpoints;
+using Xunit.Abstractions;
 
 namespace ToDo.Tests.McpEndpoints;
 
-public class ToDoToolsTests : IAsyncLifetime
+public class ToDoToolsTests(ITestOutputHelper output) : McpServerFixture(output.ToLoggerFactory())
 {
-  private McpClientManager _mcpClientManager = null!;
+    [Fact]
+    public async Task GetTodos_ReturnsEmptyList_WhenNoTodosExist()
+    {
+        var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromMinutes(1));
+        var logger = LoggerFactory.CreateLogger<ToDoToolsTests>();
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.TestOutput(output)
+            .CreateLogger();
 
-  public Task InitializeAsync()
-  {
-    var host = AppHost.CreateHostBuilder()
-        .Build();
+        // Arrange
+        await using var scope = Server.Services.CreateAsyncScope();
+        var mcpServerTools = scope.ServiceProvider.GetServices<McpServerTool>();
+        var mcpServerTool = mcpServerTools.FirstOrDefault(t => t.ProtocolTool.Name == nameof(ToDoTools.GetTodos));
+        Debug.Assert(mcpServerTool is not null, "mcpServerTool cannot be found");
+        // foreach (var mcpServerTool in mcpServerTools)
+        // {
+        //     logger.LogInformation("{Name} Input Schema: {InputSchema}",
+        //         mcpServerTool.ProtocolTool.Name,
+        //         JsonSerializer.Serialize(mcpServerTool.ProtocolTool.InputSchema));
+        // }
 
-    _mcpClientManager = new McpClientManager(host);
+        // Act
+        var mcpServer = scope.ServiceProvider.GetRequiredService<IMcpServer>();
+        var request = new RequestContext<CallToolRequestParams>(mcpServer)
+        {
+            Params = new CallToolRequestParams
+            {
+                Name = nameof(ToDoTools.GetTodos)
+            }
+        };
+        var response = await mcpServerTool.InvokeAsync(
+            request, cts.Token);
 
-    return Task.CompletedTask;
-  }
-
-  public async Task DisposeAsync()
-  {
-    await _mcpClientManager.DisposeAsync();
-  }
-
-  [Fact]
-  public async Task GetTodos_ShouldReturnEmptyList_WhenNoTodosExist()
-  {
-    // Arrange
-    var client = await _mcpClientManager.CreateMcpClient();
-
-    // Act
-    var response = await client.CallToolAsync("getTodos");
-
-    // Assert
-    Assert.False(response.IsError);
-    Assert.Empty(response.Content);
-  }
+        // Assert
+        logger.LogInformation("Response: {Response}",
+            JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true }));
+        Assert.NotNull(response);
+        Assert.False(response.IsError);
+        Assert.NotNull(response.Content);
+        
+        logger.LogInformation("Response Content: {Content}",
+            JsonSerializer.Serialize(response.Content, new JsonSerializerOptions { WriteIndented = true }));
+    }
 }
