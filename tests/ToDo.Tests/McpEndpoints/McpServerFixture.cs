@@ -1,9 +1,9 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using Serilog;
+using ToDo.Mcp.ToDoItems;
 using Xunit.Abstractions;
 
 namespace ToDo.Tests.McpEndpoints;
@@ -23,6 +23,12 @@ public class McpServerFixture
             .Build();
     }
 
+    protected async Task WithToDoService(Func<IToDoService, Task> action, AsyncServiceScope scope)
+    {
+        var toDoService = scope.ServiceProvider.GetRequiredService<IToDoService>();
+        await action(toDoService);
+    }
+    
     protected IServiceProvider Services =>
         Server.Services;
 
